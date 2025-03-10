@@ -14,7 +14,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc && shx chmod +x dist/src/*.js",
+    "build": "rm -rf dist/ && tsc && shx chmod +x dist/src/*.js",
     "prepare": "npm run build",
     "debug": "npx @modelcontextprotocol/inspector node dist/index.js",
     "watch": "tsc --watch"
