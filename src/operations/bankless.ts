@@ -23,10 +23,21 @@ export const ReadContractSchema = z.object({
   outputs: z.array(OutputSchema).describe('Expected output types')
 });
 
+// Schema for proxy request
+export const GetProxySchema = z.object({
+  network: z.string().describe('The blockchain network (e.g., "ethereum", "base")'),
+  contract: z.string().describe('The contract address'),
+});
+
 // Result type
 export type ContractCallResult = {
   value: any;
   type: string;
+};
+
+// Proxy type
+export type Proxy = {
+  implementation: string;
 };
 
 /**
@@ -86,5 +97,56 @@ export async function readContractState(
       throw new Error(`Bankless API Error (${statusCode}): ${errorMessage}`);
     }
     throw new Error(`Failed to read contract state: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Gets the proxy address for a given network and contract.
+ */
+export async function getProxy(
+  network: string,
+  contract: string
+): Promise<Proxy> {
+  const token = process.env.BANKLESS_API_TOKEN;
+  
+  if (!token) {
+    throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
+  }
+
+  const endpoint = `${BASE_URL}/${network}/contract/${contract}/find-proxy`;
+  
+  try {
+    const response = await axios.get(
+      endpoint,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status || 'unknown';
+      const errorMessage = error.response?.data?.message || error.message;
+      
+      if (statusCode === 401 || statusCode === 403) {
+        throw new BanklessAuthenticationError(`Authentication Failed: ${errorMessage}`);
+      } else if (statusCode === 404) {
+        throw new BanklessResourceNotFoundError(`Not Found: ${errorMessage}`);
+      } else if (statusCode === 422) {
+        throw new BanklessValidationError(`Validation Error: ${errorMessage}`, error.response?.data);
+      } else if (statusCode === 429) {
+        // Extract reset timestamp or default to 60 seconds from now
+        const resetAt = new Date();
+        resetAt.setSeconds(resetAt.getSeconds() + 60);
+        throw new BanklessRateLimitError(`Rate Limit Exceeded: ${errorMessage}`, resetAt);
+      }
+      
+      throw new Error(`Bankless API Error (${statusCode}): ${errorMessage}`);
+    }
+    throw new Error(`Failed to get proxy information: ${error instanceof Error ? error.message : String(error)}`);
   }
 }

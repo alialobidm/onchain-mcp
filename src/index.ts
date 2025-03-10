@@ -57,6 +57,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 name: "read_contract",
                 description: "Read contract state from a blockchain",
                 inputSchema: zodToJsonSchema(bankless.ReadContractSchema),
+            },
+            {
+                name: "get_proxy",
+                description: "Gets the proxy address for a given network and contract",
+                inputSchema: zodToJsonSchema(bankless.GetProxySchema),
             }
         ],
     };
@@ -77,6 +82,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     args.method,
                     args.inputs,
                     args.outputs
+                );
+                return {
+                    content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+                };
+            }
+            case "get_proxy": {
+                const args = bankless.GetProxySchema.parse(request.params.arguments);
+                const result = await bankless.getProxy(
+                    args.network,
+                    args.contract
                 );
                 return {
                     content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
