@@ -73,6 +73,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 name: "build_event_topic",
                 description: "Builds an event topic signature based on event name and arguments",
                 inputSchema: zodToJsonSchema(bankless.BuildEventTopicSchema),
+            },
+            {
+                name: "get_abi",
+                description: "Gets the ABI for a given contract on a specific network",
+                inputSchema: zodToJsonSchema(bankless.GetAbiSchema),
+            },
+            {
+                name: "get_source",
+                description: "Gets the source code for a given contract on a specific network",
+                inputSchema: zodToJsonSchema(bankless.GetSourceSchema),
             }
         ],
     };
@@ -126,6 +136,26 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     args.network,
                     args.name,
                     args.arguments
+                );
+                return {
+                    content: [{type: "text", text: JSON.stringify(result, null, 2)}],
+                };
+            }
+            case "get_abi": {
+                const args = bankless.GetAbiSchema.parse(request.params.arguments);
+                const result = await bankless.getAbi(
+                    args.network,
+                    args.contract
+                );
+                return {
+                    content: [{type: "text", text: JSON.stringify(result, null, 2)}],
+                };
+            }
+            case "get_source": {
+                const args = bankless.GetSourceSchema.parse(request.params.arguments);
+                const result = await bankless.getSource(
+                    args.network,
+                    args.contract
                 );
                 return {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],
