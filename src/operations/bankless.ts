@@ -2,7 +2,7 @@ import { z } from 'zod';
 import axios from 'axios';
 import { BanklessAuthenticationError, BanklessRateLimitError, BanklessResourceNotFoundError, BanklessValidationError } from '../common/banklessErrors.js';
 
-const BASE_URL = 'https://api.bankless.com/internal/chains';
+const BASE_URL = 'https://api.bankless.com/';
 
 // Schema for Input and Output types
 export const InputSchema = z.object({
@@ -29,7 +29,22 @@ export const GetProxySchema = z.object({
   contract: z.string().describe('The contract address'),
 });
 
-// Result type
+// Schema for event logs request
+export const GetEventLogsSchema = z.object({
+  network: z.string().describe('The blockchain network (e.g., "ethereum", "base")'),
+  addresses: z.array(z.string()).describe('List of contract addresses to filter events'),
+  topic: z.string().describe('Primary topic to filter events'),
+  optionalTopics: z.array(z.string().nullable()).optional().describe('Optional additional topics')
+});
+
+// Schema for building event topic
+export const BuildEventTopicSchema = z.object({
+  network: z.string().describe('The blockchain network (e.g., "ethereum", "base")'),
+  name: z.string().describe('Event name (e.g., "Transfer(address,address,uint256)")'),
+  arguments: z.array(OutputSchema).describe('Event arguments types')
+});
+
+// Result types
 export type ContractCallResult = {
   value: any;
   type: string;
@@ -38,6 +53,33 @@ export type ContractCallResult = {
 // Proxy type
 export type Proxy = {
   implementation: string;
+};
+
+// Log result type
+export type LogResult = {
+  removed: boolean;
+  logIndex: number;
+  transactionIndex: number;
+  transactionHash: string;
+  blockHash: string;
+  blockNumber: number;
+  address: string;
+  data: string;
+  type?: string;
+  topics: string[];
+  transactionIndexRaw: string;
+  logIndexRaw: string;
+  blockNumberRaw: string;
+};
+
+// EthLog type
+export type EthLog = {
+  id?: number;
+  jsonrpc?: string;
+  result: LogResult[];
+  error?: any;
+  rawResponse?: any;
+  logs?: LogResult[];
 };
 
 /**
@@ -56,7 +98,7 @@ export async function readContractState(
     throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
   }
 
-  const endpoint = `${BASE_URL}/${network}/contract/read`;
+  const endpoint = `${BASE_URL}/internal/chains/${network}/contract/read`;
   
   try {
     const response = await axios.post(
@@ -70,7 +112,7 @@ export async function readContractState(
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'X-BANKLESS-TOKEN': `${token}`
         }
       }
     );
@@ -113,7 +155,7 @@ export async function getProxy(
     throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
   }
 
-  const endpoint = `${BASE_URL}/${network}/contract/${contract}/find-proxy`;
+  const endpoint = `${BASE_URL}/internal/chains/${network}/contract/${contract}/find-proxy`;
   
   try {
     const response = await axios.get(
@@ -121,7 +163,7 @@ export async function getProxy(
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'X-BANKLESS-TOKEN': `${token}`
         }
       }
     );
@@ -148,5 +190,119 @@ export async function getProxy(
       throw new Error(`Bankless API Error (${statusCode}): ${errorMessage}`);
     }
     throw new Error(`Failed to get proxy information: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Fetches event logs for a given network and filter criteria.
+ */
+export async function getEvents(
+  network: string,
+  addresses: string[],
+  topic: string,
+  optionalTopics: (string | null)[] = []
+): Promise<EthLog> {
+  const token = process.env.BANKLESS_API_TOKEN;
+  
+  if (!token) {
+    throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
+  }
+
+  const endpoint = `${BASE_URL}/internal/chains/${network}/events/logs`;
+  
+  try {
+    const response = await axios.post(
+      endpoint,
+      {
+        addresses,
+        topic,
+        optionalTopics: optionalTopics || []
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-BANKLESS-TOKEN': `${token}`
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status || 'unknown';
+      const errorMessage = error.response?.data?.message || error.message;
+      
+      if (statusCode === 401 || statusCode === 403) {
+        throw new BanklessAuthenticationError(`Authentication Failed: ${errorMessage}`);
+      } else if (statusCode === 404) {
+        throw new BanklessResourceNotFoundError(`Not Found: ${errorMessage}`);
+      } else if (statusCode === 422) {
+        throw new BanklessValidationError(`Validation Error: ${errorMessage}`, error.response?.data);
+      } else if (statusCode === 429) {
+        // Extract reset timestamp or default to 60 seconds from now
+        const resetAt = new Date();
+        resetAt.setSeconds(resetAt.getSeconds() + 60);
+        throw new BanklessRateLimitError(`Rate Limit Exceeded: ${errorMessage}`, resetAt);
+      }
+      
+      throw new Error(`Bankless API Error (${statusCode}): ${errorMessage}`);
+    }
+    throw new Error(`Failed to fetch event logs: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Builds an event topic signature based on event name and arguments.
+ */
+export async function buildEventTopic(
+  network: string,
+  name: string,
+  arguments_: z.infer<typeof OutputSchema>[]
+): Promise<string> {
+  const token = process.env.BANKLESS_API_TOKEN;
+  
+  if (!token) {
+    throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
+  }
+
+  const endpoint = `${BASE_URL}/internal/chains/${network}/contract/build-event-topic`;
+  
+  try {
+    const response = await axios.post(
+      endpoint,
+      {
+        name,
+        arguments: arguments_
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-BANKLESS-TOKEN': `${token}`
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status || 'unknown';
+      const errorMessage = error.response?.data?.message || error.message;
+      
+      if (statusCode === 401 || statusCode === 403) {
+        throw new BanklessAuthenticationError(`Authentication Failed: ${errorMessage}`);
+      } else if (statusCode === 404) {
+        throw new BanklessResourceNotFoundError(`Not Found: ${errorMessage}`);
+      } else if (statusCode === 422) {
+        throw new BanklessValidationError(`Validation Error: ${errorMessage}`, error.response?.data);
+      } else if (statusCode === 429) {
+        // Extract reset timestamp or default to 60 seconds from now
+        const resetAt = new Date();
+        resetAt.setSeconds(resetAt.getSeconds() + 60);
+        throw new BanklessRateLimitError(`Rate Limit Exceeded: ${errorMessage}`, resetAt);
+      }
+      
+      throw new Error(`Bankless API Error (${statusCode}): ${errorMessage}`);
+    }
+    throw new Error(`Failed to build event topic: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
