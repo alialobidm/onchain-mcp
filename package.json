@@ -8,14 +8,15 @@
   "bugs": "https://github.com/Bankless/onchain-mcp/issues",
   "type": "module",
   "bin": {
-    "bankless-onchain-mcp-server": "dist/index.js"
+    "bankless-onchain-mcp-server": "dist/src/index.js"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc && shx chmod +x dist/*.js",
+    "build": "tsc && shx chmod +x dist/src/*.js",
     "prepare": "npm run build",
+    "debug": "npx @modelcontextprotocol/inspector node dist/index.js",
     "watch": "tsc --watch"
   },
   "dependencies": {
