@@ -8,7 +8,9 @@ import {
 import {z} from 'zod';
 import {zodToJsonSchema} from 'zod-to-json-schema';
 
-import * as bankless from './operations/bankless.js';
+import * as contracts from './operations/contracts.js';
+import * as events from './operations/events.js';
+import * as transactions from './operations/transactions.js';
 import {VERSION} from "./common/version.js";
 import {
     BanklessError,
@@ -54,40 +56,45 @@ function formatBanklessError(error: BanklessError): string {
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
         tools: [
+            // Contract Tools
             {
                 name: "read_contract",
                 description: "Read contract state from a blockchain",
-                inputSchema: zodToJsonSchema(bankless.ReadContractSchema),
+                inputSchema: zodToJsonSchema(contracts.ReadContractSchema),
             },
             {
                 name: "get_proxy",
                 description: "Gets the proxy address for a given network and contract",
-                inputSchema: zodToJsonSchema(bankless.GetProxySchema),
-            },
-            {
-                name: "get_events",
-                description: "Fetches event logs for a given network and filter criteria",
-                inputSchema: zodToJsonSchema(bankless.GetEventLogsSchema),
-            },
-            {
-                name: "build_event_topic",
-                description: "Builds an event topic signature based on event name and arguments",
-                inputSchema: zodToJsonSchema(bankless.BuildEventTopicSchema),
+                inputSchema: zodToJsonSchema(contracts.GetProxySchema),
             },
             {
                 name: "get_abi",
                 description: "Gets the ABI for a given contract on a specific network",
-                inputSchema: zodToJsonSchema(bankless.GetAbiSchema),
+                inputSchema: zodToJsonSchema(contracts.GetAbiSchema),
             },
             {
                 name: "get_source",
                 description: "Gets the source code for a given contract on a specific network",
-                inputSchema: zodToJsonSchema(bankless.GetSourceSchema),
+                inputSchema: zodToJsonSchema(contracts.GetSourceSchema),
             },
+            
+            // Event Tools
+            {
+                name: "get_events",
+                description: "Fetches event logs for a given network and filter criteria",
+                inputSchema: zodToJsonSchema(events.GetEventLogsSchema),
+            },
+            {
+                name: "build_event_topic",
+                description: "Builds an event topic signature based on event name and arguments",
+                inputSchema: zodToJsonSchema(events.BuildEventTopicSchema),
+            },
+            
+            // Transaction Tools
             {
                 name: "get_transaction_history",
                 description: "Gets transaction history for a user and optional contract",
-                inputSchema: zodToJsonSchema(bankless.TransactionHistorySchema),
+                inputSchema: zodToJsonSchema(transactions.TransactionHistorySchema),
             }
         ],
     };
@@ -100,9 +107,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
 
         switch (request.params.name) {
+            // Contract Tools
             case "read_contract": {
-                const args = bankless.ReadContractSchema.parse(request.params.arguments);
-                const result = await bankless.readContractState(
+                const args = contracts.ReadContractSchema.parse(request.params.arguments);
+                const result = await contracts.readContractState(
                     args.network,
                     args.contract,
                     args.method,
@@ -114,8 +122,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 };
             }
             case "get_proxy": {
-                const args = bankless.GetProxySchema.parse(request.params.arguments);
-                const result = await bankless.getProxy(
+                const args = contracts.GetProxySchema.parse(request.params.arguments);
+                const result = await contracts.getProxy(
                     args.network,
                     args.contract
                 );
@@ -123,9 +131,31 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],
                 };
             }
+            case "get_abi": {
+                const args = contracts.GetAbiSchema.parse(request.params.arguments);
+                const result = await contracts.getAbi(
+                    args.network,
+                    args.contract
+                );
+                return {
+                    content: [{type: "text", text: JSON.stringify(result, null, 2)}],
+                };
+            }
+            case "get_source": {
+                const args = contracts.GetSourceSchema.parse(request.params.arguments);
+                const result = await contracts.getSource(
+                    args.network,
+                    args.contract
+                );
+                return {
+                    content: [{type: "text", text: JSON.stringify(result, null, 2)}],
+                };
+            }
+            
+            // Event Tools
             case "get_events": {
-                const args = bankless.GetEventLogsSchema.parse(request.params.arguments);
-                const result = await bankless.getEvents(
+                const args = events.GetEventLogsSchema.parse(request.params.arguments);
+                const result = await events.getEvents(
                     args.network,
                     args.addresses,
                     args.topic,
@@ -136,8 +166,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 };
             }
             case "build_event_topic": {
-                const args = bankless.BuildEventTopicSchema.parse(request.params.arguments);
-                const result = await bankless.buildEventTopic(
+                const args = events.BuildEventTopicSchema.parse(request.params.arguments);
+                const result = await events.buildEventTopic(
                     args.network,
                     args.name,
                     args.arguments
@@ -146,29 +176,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],
                 };
             }
-            case "get_abi": {
-                const args = bankless.GetAbiSchema.parse(request.params.arguments);
-                const result = await bankless.getAbi(
-                    args.network,
-                    args.contract
-                );
-                return {
-                    content: [{type: "text", text: JSON.stringify(result, null, 2)}],
-                };
-            }
-            case "get_source": {
-                const args = bankless.GetSourceSchema.parse(request.params.arguments);
-                const result = await bankless.getSource(
-                    args.network,
-                    args.contract
-                );
-                return {
-                    content: [{type: "text", text: JSON.stringify(result, null, 2)}],
-                };
-            }
+            
+            // Transaction Tools
             case "get_transaction_history": {
-                const args = bankless.TransactionHistorySchema.parse(request.params.arguments);
-                const result = await bankless.getTransactionHistory(
+                const args = transactions.TransactionHistorySchema.parse(request.params.arguments);
+                const result = await transactions.getTransactionHistory(
                     args.network,
                     args.user,
                     args.contract,
@@ -180,6 +192,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],
                 };
             }
+            
             default:
                 throw new Error(`Unknown tool: ${request.params.name}`);
         }
