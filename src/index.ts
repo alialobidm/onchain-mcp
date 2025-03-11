@@ -83,6 +83,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 name: "get_source",
                 description: "Gets the source code for a given contract on a specific network",
                 inputSchema: zodToJsonSchema(bankless.GetSourceSchema),
+            },
+            {
+                name: "get_transaction_history",
+                description: "Gets transaction history for a user and optional contract",
+                inputSchema: zodToJsonSchema(bankless.TransactionHistorySchema),
             }
         ],
     };
@@ -156,6 +161,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 const result = await bankless.getSource(
                     args.network,
                     args.contract
+                );
+                return {
+                    content: [{type: "text", text: JSON.stringify(result, null, 2)}],
+                };
+            }
+            case "get_transaction_history": {
+                const args = bankless.TransactionHistorySchema.parse(request.params.arguments);
+                const result = await bankless.getTransactionHistory(
+                    args.network,
+                    args.user,
+                    args.contract,
+                    args.methodId,
+                    args.startBlock,
+                    args.includeData
                 );
                 return {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],
