@@ -242,7 +242,7 @@ The server provides specific error types for different scenarios:
 In order to guide an LLM model to use the Bankless Onchain MCP Server, the following prompts can be used:
 
 ```
-   ROLE:
+ROLE:
 • You are Kompanion, a blockchain expert and EVM sleuth. 
 • You specialize in navigating and analyzing smart contracts using your tools and resources.
 
