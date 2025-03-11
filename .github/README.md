@@ -11,10 +11,45 @@ The Bankless Onchain MCP Server provides a framework for interacting with on-cha
 
 ## Features
 
-- Read blockchain contract state
-- Get proxy implementation addresses
-- Fetch event logs from smart contracts
-- Build event topic signatures for filtering
+The server provides the following onchain data operations:
+
+### Contract Operations
+
+- **Read Contract State** (`read_contract`): Read state from smart contracts on various blockchain networks.
+    - Parameters: network, contract address, method, inputs, outputs
+    - Returns: Contract call results with typed values
+
+- **Get Proxy** (`get_proxy`): Retrieve proxy implementation contract addresses.
+    - Parameters: network, contract address
+    - Returns: Implementation contract address
+
+- **Get ABI** (`get_abi`): Fetch the ABI (Application Binary Interface) for a contract.
+    - Parameters: network, contract address
+    - Returns: Contract ABI in JSON format
+
+- **Get Source** (`get_source`): Retrieve the source code for a verified contract.
+    - Parameters: network, contract address
+    - Returns: Source code, ABI, compiler version, and other contract metadata
+
+### Event Operations
+
+- **Get Events** (`get_events`): Fetch event logs for a contract based on topics.
+    - Parameters: network, addresses, topic, optional topics
+    - Returns: Filtered event logs
+
+- **Build Event Topic** (`build_event_topic`): Generate an event topic signature from event name and argument types.
+    - Parameters: network, event name, argument types
+    - Returns: Event topic hash
+
+### Transaction Operations
+
+- **Get Transaction History** (`get_transaction_history`): Retrieve transaction history for a user address.
+    - Parameters: network, user address, optional contract, optional method ID, optional start block, include data flag
+    - Returns: List of transactions with hash, data, network, and timestamp
+
+- **Get Transaction Info** (`get_transaction_info`): Get detailed information about a specific transaction.
+    - Parameters: network, transaction hash
+    - Returns: Transaction details including block number, timestamp, from/to addresses, value, gas info, status, and receipt data
 
 ## Tools
 

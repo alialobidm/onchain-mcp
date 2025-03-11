@@ -14,12 +14,41 @@ export const TransactionHistorySchema = z.object({
   includeData: z.boolean().default(true).describe('Whether to include transaction data')
 });
 
+// Schema for transaction info request
+export const TransactionInfoSchema = z.object({
+  network: z.string().describe('The blockchain network (e.g., "ethereum", "polygon")'),
+  txHash: z.string().describe('The transaction hash to fetch details for')
+});
+
 // Transaction History Response type
 export type SimplifiedTransactionVO = {
   hash: string;
   data: string;
   network: string;
   timestamp: string;
+};
+
+// Transaction Info Response type
+export type TransactionInfoVO = {
+  hash: string;
+  blockNumber: number;
+  timestamp: string;
+  from: string;
+  to: string;
+  value: string;
+  gasPrice: string;
+  gasUsed: string;
+  status: boolean;
+  input: string;
+  network: string;
+  receipt?: {
+    contractAddress?: string;
+    logs: Array<{
+      address: string;
+      topics: string[];
+      data: string;
+    }>;
+  };
 };
 
 /**
@@ -81,5 +110,56 @@ export async function getTransactionHistory(
       throw new Error(`Bankless API Error (${statusCode}): ${errorMessage}`);
     }
     throw new Error(`Failed to get transaction history: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/**
+ * Gets detailed information about a specific transaction.
+ */
+export async function getTransactionInfo(
+  network: string,
+  txHash: string
+): Promise<TransactionInfoVO> {
+  const token = process.env.BANKLESS_API_TOKEN;
+  
+  if (!token) {
+    throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
+  }
+
+  const endpoint = `${BASE_URL}/internal/chains/${network}/transaction-info/${txHash}`;
+  
+  try {
+    const response = await axios.get(
+      endpoint,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-BANKLESS-TOKEN': `${token}`
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const statusCode = error.response?.status || 'unknown';
+      const errorMessage = error.response?.data?.message || error.message;
+      
+      if (statusCode === 401 || statusCode === 403) {
+        throw new BanklessAuthenticationError(`Authentication Failed: ${errorMessage}`);
+      } else if (statusCode === 404) {
+        throw new BanklessResourceNotFoundError(`Transaction not found: ${txHash}`);
+      } else if (statusCode === 422) {
+        throw new BanklessValidationError(`Validation Error: ${errorMessage}`, error.response?.data);
+      } else if (statusCode === 429) {
+        // Extract reset timestamp or default to 60 seconds from now
+        const resetAt = new Date();
+        resetAt.setSeconds(resetAt.getSeconds() + 60);
+        throw new BanklessRateLimitError(`Rate Limit Exceeded: ${errorMessage}`, resetAt);
+      }
+      
+      throw new Error(`Bankless API Error (${statusCode}): ${errorMessage}`);
+    }
+    throw new Error(`Failed to get transaction info: ${error instanceof Error ? error.message : String(error)}`);
   }
 }

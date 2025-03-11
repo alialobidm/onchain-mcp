@@ -95,6 +95,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 name: "get_transaction_history",
                 description: "Gets transaction history for a user and optional contract",
                 inputSchema: zodToJsonSchema(transactions.TransactionHistorySchema),
+            },
+            {
+                name: "get_transaction_info",
+                description: "Gets detailed information about a specific transaction",
+                inputSchema: zodToJsonSchema(transactions.TransactionInfoSchema),
             }
         ],
     };
@@ -187,6 +192,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     args.methodId,
                     args.startBlock,
                     args.includeData
+                );
+                return {
+                    content: [{type: "text", text: JSON.stringify(result, null, 2)}],
+                };
+            }
+            case "get_transaction_info": {
+                const args = transactions.TransactionInfoSchema.parse(request.params.arguments);
+                const result = await transactions.getTransactionInfo(
+                    args.network,
+                    args.txHash
                 );
                 return {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],
