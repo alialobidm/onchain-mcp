@@ -1,15 +1,16 @@
 {
-  "name": "@bankless/onchain-mcp-server",
+  "name": "@bankless/onchain-mcp",
   "version": "0.6.2",
   "description": "MCP server for using Bankless Onchain",
   "license": "MIT",
-  "author": "BAnkless Engineering (https://bankless.com)",
+  "author": "Bankless Engineering (https://bankless.com)",
   "homepage": "https://bankless.com",
   "bugs": "https://github.com/Bankless/onchain-mcp/issues",
   "type": "module",
   "bin": {
-    "bankless-onchain-mcp-server": "dist/src/index.js"
+    "onchain-mcp": "dist/src/index.js"
   },
+  "main": "dist/src/index.js",
   "files": [
     "dist"
   ],
