@@ -59,7 +59,22 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             // Contract Tools
             {
                 name: "read_contract",
-                description: "Read contract state from a blockchain",
+                description: `Read contract state from a blockchain. important:  
+                
+                In case of a tuple, don't use type tuple, but specify the inner types (found in the source) in order. For nested structs, include the substructs types.
+    
+    Example: 
+    struct DataTypeA {
+    DataTypeB b;
+    //the liquidity index. Expressed in ray
+    uint128 liquidityIndex;
+    }
+    
+    struct DataTypeB {
+    address token;
+    }
+    
+    results in outputs for function with return type DataTypeA (tuple in abi): outputs: [{"type": "address"}, {"type": "uint128"}]`,
                 inputSchema: zodToJsonSchema(contracts.ReadContractSchema),
             },
             {
@@ -77,7 +92,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 description: "Gets the source code for a given contract on a specific network",
                 inputSchema: zodToJsonSchema(contracts.GetSourceSchema),
             },
-            
+
             // Event Tools
             {
                 name: "get_events",
@@ -89,7 +104,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 description: "Builds an event topic signature based on event name and arguments",
                 inputSchema: zodToJsonSchema(events.BuildEventTopicSchema),
             },
-            
+
             // Transaction Tools
             {
                 name: "get_transaction_history",
@@ -156,7 +171,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],
                 };
             }
-            
+
             // Event Tools
             case "get_events": {
                 const args = events.GetEventLogsSchema.parse(request.params.arguments);
@@ -181,7 +196,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],
                 };
             }
-            
+
             // Transaction Tools
             case "get_transaction_history": {
                 const args = transactions.TransactionHistorySchema.parse(request.params.arguments);
@@ -207,7 +222,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],
                 };
             }
-            
+
             default:
                 throw new Error(`Unknown tool: ${request.params.name}`);
         }
