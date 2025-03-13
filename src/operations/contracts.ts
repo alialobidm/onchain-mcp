@@ -5,7 +5,7 @@ import {
     BanklessRateLimitError,
     BanklessResourceNotFoundError,
     BanklessValidationError
-} from '../common/banklessErrors.js';
+} from '../common/banklessErrors';
 
 const BASE_URL = 'https://api.bankless.com/';
 
@@ -15,7 +15,13 @@ export const InputSchema = z.object({
     value: z.any().describe('The value of the input parameter')
 });
 
-export const OutputSchema = z.object({
+// Define the interface first
+export interface OutputSchemaType {
+    type: string;
+    components?: OutputSchemaType[];
+}
+
+export const OutputSchema: z.ZodType<OutputSchemaType> = z.object({
     type: z.string().describe(`Expected output types for the method call. 
     In case of a tuple, don't use type tuple, but specify the inner types (found in the source) in order. For nested structs, include the substructs types.
     
@@ -31,7 +37,8 @@ export const OutputSchema = z.object({
     }
     
     results in outputs for function with return type DataTypeA (tuple in abi): outputs: [{"type": "address"}, {"type": "uint128"}]
-  `)
+  `),
+    components: z.array(z.lazy(() => OutputSchema)).optional().describe(`optional components for tuple types`)
 });
 
 // Schema for read contract request
@@ -118,6 +125,30 @@ export type ContractSourceResponse = {
     result: ContractSourceResult[];
 };
 
+
+// Update the process functions to use this type
+function processOutput(output: OutputSchemaType) {
+    if (output.type === 'tuple' && output.components) {
+        return processOutputs(output.components);
+    }
+    return [output];
+}
+
+function processOutputs(outputs: OutputSchemaType[]) {
+    if (!outputs || !Array.isArray(outputs)) {
+        return [];
+    }
+
+    const result: OutputSchemaType[] = [];
+
+    for (const output of outputs) {
+        const processed = processOutput(output);
+        result.push(...processed);
+    }
+
+    return result;
+}
+
 /**
  * Read contract state from a blockchain
  */
@@ -135,6 +166,8 @@ export async function readContractState(
     }
 
     const endpoint = `${BASE_URL}/internal/chains/${network}/contract/read`;
+
+    const cleanedOutputs = processOutputs(outputs);
 
     try {
         const response = await axios.post(
