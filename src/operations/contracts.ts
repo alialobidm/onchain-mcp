@@ -176,7 +176,7 @@ export async function readContractState(
                 contract,
                 method,
                 inputs,
-                outputs
+                cleanedOutputs
             },
             {
                 headers: {
