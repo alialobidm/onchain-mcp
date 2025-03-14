@@ -264,7 +264,7 @@ To integrate this server with AI applications that support MCP, add the followin
     "bankless": {
       "command": "node",
       "args": [
-        "{ABSOLUTE PATH TO FILE HERE}/dist/src/index.js"
+        "{ABSOLUTE PATH PROJECT}/dist/index.js"
       ]
     }
   }
