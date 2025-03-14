@@ -9,6 +9,10 @@ MCP (Model Context Protocol) server for blockchain data interaction through the 
 
 The Bankless Onchain MCP Server provides a framework for interacting with on-chain data via the Bankless API. It implements the Model Context Protocol (MCP) to allow AI models to access blockchain state and event data in a structured way.
 
+
+https://github.com/user-attachments/assets/95732dff-ae5f-45a6-928a-1ae17c0ddf9d
+
+
 ## Features
 
 The server provides the following onchain data operations:
