@@ -260,9 +260,9 @@ To integrate this server with AI applications that support MCP, add the followin
 {
   "mcpServers": {
     "bankless": {
-      "command": "node",
+      "command": "npx",
       "args": [
-        "{ABSOLUTE PATH PROJECT}/dist/index.js"
+        "@bankless/onchain-mcp@1.0.0"
       ]
     }
   }
