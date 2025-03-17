@@ -244,12 +244,6 @@ npm run build
 npm run debug
 ```
 
-### Watch Mode (for development)
-
-```bash
-npm run watch
-```
-
 ### Integration with AI Models
 
 To integrate this server with AI applications that support MCP, add the following to your app's server configuration:
