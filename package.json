@@ -1,6 +1,6 @@
 {
   "name": "@bankless/onchain-mcp",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "MCP server for using Bankless Onchain",
   "license": "MIT",
   "author": "Bankless Engineering (https://bankless.com)",
