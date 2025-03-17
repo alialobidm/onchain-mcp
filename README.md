@@ -118,7 +118,7 @@ export BANKLESS_API_TOKEN=your_api_token_here
 The server can be run directly from the command line:
 
 ```bash
-npx bankless-onchain-mcp-server
+npx @bankless/onchain-mcp
 ```
 
 ### Usage with LLM Tools
