@@ -7,7 +7,7 @@ import {
     BanklessValidationError
 } from '../common/banklessErrors';
 
-const BASE_URL = 'https://api.bankless.com/';
+const BASE_URL = 'https://api.bankless.com/mcp';
 
 // Schema for Input and Output types
 export const InputSchema = z.object({
@@ -165,7 +165,7 @@ export async function readContractState(
         throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
     }
 
-    const endpoint = `${BASE_URL}/internal/chains/${network}/contract/read`;
+    const endpoint = `${BASE_URL}/chains/${network}/contract/read`;
 
     const cleanedOutputs = processOutputs(outputs);
 
@@ -176,7 +176,7 @@ export async function readContractState(
                 contract,
                 method,
                 inputs,
-                cleanedOutputs
+                outputs: cleanedOutputs
             },
             {
                 headers: {
@@ -224,7 +224,7 @@ export async function getProxy(
         throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
     }
 
-    const endpoint = `${BASE_URL}/internal/chains/${network}/contract/${contract}/find-proxy`;
+    const endpoint = `${BASE_URL}/chains/${network}/contract/${contract}/find-proxy`;
 
     try {
         const response = await axios.get(
@@ -275,7 +275,7 @@ export async function getAbi(
         throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
     }
 
-    const endpoint = `${BASE_URL}/internal/chains/${network}/get_abi/${contract}`;
+    const endpoint = `${BASE_URL}/chains/${network}/get_abi/${contract}`;
 
     try {
         const response = await axios.get(
@@ -326,7 +326,7 @@ export async function getSource(
         throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
     }
 
-    const endpoint = `${BASE_URL}/internal/chains/${network}/get_source/${contract}`;
+    const endpoint = `${BASE_URL}/chains/${network}/get_source/${contract}`;
 
     try {
         const response = await axios.get(

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { BanklessAuthenticationError, BanklessRateLimitError, BanklessResourceNotFoundError, BanklessValidationError } from '../common/banklessErrors.js';
 import { OutputSchema } from './contracts.js';
 
-const BASE_URL = 'https://api.bankless.com/';
+const BASE_URL = 'https://api.bankless.com/mcp';
 
 // Schema for event logs request
 export const GetEventLogsSchema = z.object({
@@ -62,7 +62,7 @@ export async function getEvents(
     throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
   }
 
-  const endpoint = `${BASE_URL}/internal/chains/${network}/events/logs`;
+  const endpoint = `${BASE_URL}/chains/${network}/events/logs`;
   
   try {
     const response = await axios.post(
@@ -119,7 +119,7 @@ export async function buildEventTopic(
     throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
   }
 
-  const endpoint = `${BASE_URL}/internal/chains/${network}/contract/build-event-topic`;
+  const endpoint = `${BASE_URL}/chains/${network}/contract/build-event-topic`;
   
   try {
     const response = await axios.post(

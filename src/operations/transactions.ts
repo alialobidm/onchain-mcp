@@ -2,7 +2,7 @@ import { z } from 'zod';
 import axios from 'axios';
 import { BanklessAuthenticationError, BanklessRateLimitError, BanklessResourceNotFoundError, BanklessValidationError } from '../common/banklessErrors.js';
 
-const BASE_URL = 'https://api.bankless.com/';
+const BASE_URL = 'https://api.bankless.com/mcp';
 
 // Schema for transaction history request
 export const TransactionHistorySchema = z.object({
@@ -68,7 +68,7 @@ export async function getTransactionHistory(
     throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
   }
 
-  const endpoint = `${BASE_URL}/internal/chains/${network}/transaction-history`;
+  const endpoint = `${BASE_URL}/chains/${network}/transaction-history`;
   
   try {
     const response = await axios.post(
@@ -126,7 +126,7 @@ export async function getTransactionInfo(
     throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
   }
 
-  const endpoint = `${BASE_URL}/internal/chains/${network}/transaction-info/${txHash}`;
+  const endpoint = `${BASE_URL}/chains/${network}/transaction-info/${txHash}`;
   
   try {
     const response = await axios.get(
