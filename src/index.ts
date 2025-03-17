@@ -11,6 +11,7 @@ import {zodToJsonSchema} from 'zod-to-json-schema';
 import * as contracts from './operations/contracts.js';
 import * as events from './operations/events.js';
 import * as transactions from './operations/transactions.js';
+import * as tokens from './operations/tokens.js';
 import {VERSION} from "./common/version.js";
 import {
     BanklessError,
@@ -115,6 +116,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 name: "get_transaction_info",
                 description: "Gets detailed information about a specific transaction",
                 inputSchema: zodToJsonSchema(transactions.TransactionInfoSchema),
+            },
+            
+            // Token Tools
+            {
+                name: "get_native_balance",
+                description: "Gets the native token balance for a given address on a specified blockchain",
+                inputSchema: zodToJsonSchema(tokens.NativeBalanceSchema),
             }
         ],
     };
@@ -220,6 +228,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 );
                 return {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],
+                };
+            }
+            
+            // Token Tools
+            case "get_native_balance": {
+                const args = tokens.NativeBalanceSchema.parse(request.params.arguments);
+                const result = await tokens.getNativeBalance(
+                    args.network,
+                    args.address
+                );
+                return {
+                    content: [{type: "text", text: result.toString()}],
                 };
             }
 
