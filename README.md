@@ -12,8 +12,6 @@ The Bankless Onchain MCP Server provides a framework for interacting with on-cha
 
 https://github.com/user-attachments/assets/95732dff-ae5f-45a6-928a-1ae17c0ddf9d
 
-[<img width="374" align="center" alt="image" src="https://github.com/user-attachments/assets/5b819161-bde3-405d-8082-07f047b0f78f" />](https://docs.bankless.com/bankless-api/other-services/onchain-mcp)
-
 
 ## Features
 
@@ -107,7 +105,7 @@ npm install @bankless/onchain-mcp-server
 
 ### Environment Setup
 
-Before using the server, set your Bankless API token:
+Before using the server, set your Bankless API token. For details on how to obtain your Bankless API token, head to https://docs.bankless.com/bankless-api/other-services/onchain-mcp
 
 ```bash
 export BANKLESS_API_TOKEN=your_api_token_here
