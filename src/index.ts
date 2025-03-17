@@ -123,6 +123,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 name: "get_native_balance",
                 description: "Gets the native token balance for a given address on a specified blockchain",
                 inputSchema: zodToJsonSchema(tokens.NativeBalanceSchema),
+            },
+            {
+                name: "get_token_balances_on_network",
+                description: "Gets all token balances for a given address on a specific network",
+                inputSchema: zodToJsonSchema(tokens.TokenBalancesOnNetworkSchema),
             }
         ],
     };
@@ -240,6 +245,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 );
                 return {
                     content: [{type: "text", text: result.toString()}],
+                };
+            }
+            case "get_token_balances_on_network": {
+                const args = tokens.TokenBalancesOnNetworkSchema.parse(request.params.arguments);
+                const result = await tokens.getTokenBalancesOnNetwork(
+                    args.network,
+                    args.address
+                );
+                return {
+                    content: [{type: "text", text: JSON.stringify(result, null, 2)}],
                 };
             }
 
