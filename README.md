@@ -98,7 +98,7 @@ The server provides the following onchain data operations:
 ## Installation
 
 ```bash
-npm install @bankless/onchain-mcp-server
+npm install @bankless/onchain-mcp
 ```
 
 ## Usage
