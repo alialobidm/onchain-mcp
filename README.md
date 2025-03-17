@@ -254,7 +254,7 @@ To integrate this server with AI applications that support MCP, add the followin
     "bankless": {
       "command": "npx",
       "args": [
-        "@bankless/onchain-mcp@1.0.0"
+        "@bankless/onchain-mcp@1.0.2"
       ],
       "env": {
         "BANKLESS_API_TOKEN": "your_api_token_here"
