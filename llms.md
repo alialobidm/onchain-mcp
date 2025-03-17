@@ -139,12 +139,3 @@ try {
   // Standardized error handling
 }
 ```
-
-### Tool Invocation
-
-LLMs can invoke tools using the MCP protocol:
-
-```
-<function_calls>
-<invoke name="read_contract">
-<parameter name="network">ethereum
