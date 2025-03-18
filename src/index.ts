@@ -109,7 +109,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
             // Transaction Tools
             {
-                name: "get_transaction_history",
+                name: "get_transaction_history_for_user",
                 description: "Gets transaction history for a user and optional contract",
                 inputSchema: zodToJsonSchema(transactions.TransactionHistorySchema),
             },
@@ -120,11 +120,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             
             // Token Tools
-            {
-                name: "get_native_balance",
-                description: "Gets the native token balance for a given address on a specified blockchain",
-                inputSchema: zodToJsonSchema(tokens.NativeBalanceSchema),
-            },
             {
                 name: "get_token_balances_on_network",
                 description: "Gets all token balances for a given address on a specific network",
@@ -200,7 +195,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     args.network,
                     args.addresses,
                     args.topic,
-                    args.optionalTopics
+                    args.optionalTopics,
+                    args.fromBlock,
+                    args.toBlock
                 );
                 return {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],
@@ -219,7 +216,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             }
 
             // Transaction Tools
-            case "get_transaction_history": {
+            case "get_transaction_history_for_user": {
                 const args = transactions.TransactionHistorySchema.parse(request.params.arguments);
                 const result = await transactions.getTransactionHistory(
                     args.network,
@@ -245,16 +242,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             }
             
             // Token Tools
-            case "get_native_balance": {
-                const args = tokens.NativeBalanceSchema.parse(request.params.arguments);
-                const result = await tokens.getNativeBalance(
-                    args.network,
-                    args.address
-                );
-                return {
-                    content: [{type: "text", text: result.toString()}],
-                };
-            }
             case "get_token_balances_on_network": {
                 const args = tokens.TokenBalancesOnNetworkSchema.parse(request.params.arguments);
                 const result = await tokens.getTokenBalancesOnNetwork(

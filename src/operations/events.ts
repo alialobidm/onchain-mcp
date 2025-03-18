@@ -15,7 +15,9 @@ export const GetEventLogsSchema = z.object({
     network: z.string().describe('The blockchain network (e.g., "ethereum", "base")'),
     addresses: z.array(z.string()).describe('List of contract addresses to filter events'),
     topic: z.string().describe('Primary topic to filter events'),
-    optionalTopics: z.array(z.string().nullable()).optional().describe('Optional additional topics')
+    optionalTopics: z.array(z.string().nullable()).optional().describe('Optional additional topics'),
+    fromBlock: z.number().optional().describe("Block number to start fetching logs from"),
+    toBlock: z.number().optional().describe("Block number to stop fetching logs at")
 });
 
 // Schema for building event topic
@@ -59,7 +61,9 @@ export async function getEvents(
     network: string,
     addresses: string[],
     topic: string,
-    optionalTopics: (string | null)[] = []
+    optionalTopics: (string | null)[] = [],
+    fromBlock?: number,
+    toBlock?: number
 ): Promise<EthLog> {
     const token = process.env.BANKLESS_API_TOKEN;
 
@@ -75,7 +79,10 @@ export async function getEvents(
             {
                 addresses,
                 topic,
-                optionalTopics: optionalTopics || []
+                optionalTopics: optionalTopics || [],
+                fromBlock,
+                toBlock,
+                fetchAll: false,
             },
             {
                 headers: {
