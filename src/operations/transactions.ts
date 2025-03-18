@@ -126,7 +126,7 @@ export async function getTransactionInfo(
     throw new BanklessAuthenticationError('BANKLESS_API_TOKEN environment variable is not set');
   }
 
-  const endpoint = `${BASE_URL}/chains/${network}/transaction-info/${txHash}`;
+  const endpoint = `${BASE_URL}/chains/${network}/tx/${txHash}`;
   
   try {
     const response = await axios.get(

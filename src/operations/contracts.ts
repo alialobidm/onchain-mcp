@@ -134,7 +134,7 @@ function processOutput(output: OutputSchemaType) {
     return [output];
 }
 
-function processOutputs(outputs: OutputSchemaType[]) {
+export function processOutputs(outputs: OutputSchemaType[]) {
     if (!outputs || !Array.isArray(outputs)) {
         return [];
     }
