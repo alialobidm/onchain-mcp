@@ -12,6 +12,7 @@ import * as contracts from './operations/contracts.js';
 import * as events from './operations/events.js';
 import * as transactions from './operations/transactions.js';
 import * as tokens from './operations/tokens.js';
+import * as blocks from './operations/blocks.js';
 import {VERSION} from "./common/version.js";
 import {
     BanklessError,
@@ -128,6 +129,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                 name: "get_token_balances_on_network",
                 description: "Gets all token balances for a given address on a specific network",
                 inputSchema: zodToJsonSchema(tokens.TokenBalancesOnNetworkSchema),
+            },
+            
+            // Block Tools
+            {
+                name: "get_block_info",
+                description: "Gets detailed information about a specific block by number or hash",
+                inputSchema: zodToJsonSchema(blocks.BlockInfoSchema),
             }
         ],
     };
@@ -252,6 +260,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 const result = await tokens.getTokenBalancesOnNetwork(
                     args.network,
                     args.address
+                );
+                return {
+                    content: [{type: "text", text: JSON.stringify(result, null, 2)}],
+                };
+            }
+            
+            // Block Tools
+            case "get_block_info": {
+                const args = blocks.BlockInfoSchema.parse(request.params.arguments);
+                const result = await blocks.getBlockInfo(
+                    args.network,
+                    args.blockId
                 );
                 return {
                     content: [{type: "text", text: JSON.stringify(result, null, 2)}],

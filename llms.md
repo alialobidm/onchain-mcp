@@ -21,6 +21,8 @@ The `onchain-mcp` submodule implements a Model Context Protocol (MCP) server for
     - Contracts: Reading contract state, fetching ABIs, proxies, and source code
     - Events: Fetching blockchain event logs and building event topic signatures
     - Transactions: Fetching transaction history and detailed transaction information
+    - Blocks: Fetching detailed block information by number or hash
+    - Tokens: Fetching token balances for addresses
 
 ### Dependencies
 
@@ -77,6 +79,24 @@ The `onchain-mcp` submodule implements a Model Context Protocol (MCP) server for
     - Fetches detailed information about a specific transaction
     - Includes execution status, gas usage, and transaction receipt
     - Schema: `TransactionInfoSchema`
+
+### Block Operations
+
+1. **Get Block Info**
+    - Fetches detailed information about a specific block
+    - Can be queried by block number or block hash
+    - Includes timestamp, gas used/limit, transactions, and other block data
+    - Schema: `BlockInfoSchema`
+
+### Token Operations
+
+1. **Get Native Balance**
+    - Retrieves the native token balance for an address on a specified blockchain
+    - Schema: `NativeBalanceSchema`
+
+2. **Get Token Balances**
+    - Retrieves all token balances for an address on a specific network
+    - Schema: `TokenBalancesOnNetworkSchema`
 
 ## API Integration
 
